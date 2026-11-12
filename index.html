@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GigaBiz - نظام إدارة الباقات والترحيل اليومي</title>
+    <style>
+        :root {
+            --bg-dark: #0b0914;
+            --card-bg: #151126;
+            --card-border: #2a214a;
+            --purple-main: #7c3aed;
+            --purple-hover: #6d28d9;
+            --purple-light: #a78bfa;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --green: #10b981;
+            --red: #ef4444;
+            --amber: #f59e0b;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+        .num {
+            direction: ltr;
+            unicode-bidi: isolate;
+            font-variant-numeric: tabular-nums;
+            font-family: 'Consolas', 'Segoe UI', monospace;
+        }
+        .container { max-width: 1200px; margin: auto; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        h1 { margin: 0; color: var(--purple-light); font-size: 1.5rem; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px;
+        }
+        .stat-title { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px; }
+        .stat-val { font-size: 1.5rem; font-weight: bold; }
+        .val-green { color: var(--green); }
+        .val-red { color: var(--red); }
+        .val-purple { color: var(--purple-light); }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        input {
+            background: #1e1936;
+            border: 1px solid var(--card-border);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+        }
+        input[type="number"] {
+            direction: ltr;
+            text-align: left;
+            font-family: 'Consolas', monospace;
+        }
+        input:focus { border-color: var(--purple-main); }
+        button {
+            background: var(--purple-main);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover { background: var(--purple-hover); }
+        .btn-green { background: #059669; }
+        .btn-green:hover { background: #047857; }
+        .btn-amber { background: #d97706; }
+        .btn-amber:hover { background: #b45309; }
+        .btn-red { background: #dc2626; padding: 6px 10px; font-size: 0.8rem; }
+
+        .customers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .cust-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+        .cust-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 10px;
+        }
+        .cust-name { font-size: 1.3rem; font-weight: bold; color: #fff; }
+        .cust-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: #0f0c1d;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .metric-box span { display: block; font-size: 0.8rem; color: var(--text-muted); }
+        .metric-box strong { font-size: 1.05rem; }
+        .cust-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .action-row { display: flex; gap: 6px; align-items: center; }
+        .action-row input { width: 90px; padding: 7px; }
+        .action-row button { flex: 1; padding: 8px; font-size: 0.85rem; }
+
+        .log-section {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: right; padding: 12px; border-bottom: 1px solid var(--card-border); font-size: 0.9rem; }
+        th { color: var(--purple-light); }
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+        .badge-pre { background: rgba(16, 185, 129, 0.2); color: var(--green); }
+        .badge-post { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+        .badge-use { background: rgba(245, 158, 11, 0.2); color: var(--amber); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>⚡ GigaBiz - إدارة باقات الإنترنت والترحيل اليومي</h1>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <span style="color:var(--text-muted); font-size:0.9rem;">الباقة الأم (MB):</span>
+            <input type="number" id="masterMb" style="width:105px;" title="إجمالي الميجابايت">
+            <input type="number" id="masterCost" style="width:90px;" title="سعر الباقة">
+            <button onclick="saveSettings()">حفظ</button>
+        </div>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-title">إجمالي المبيعات (الفواتير)</div>
+            <div class="stat-val val-purple"><span class="num" id="statBilled">0</span> ليرة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">المبالغ المقبوضة (كاش)</div>
+            <div class="stat-val val-green"><span class="num" id="statPaid">0</span> ليرة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">الديون المتبقية (لاحق الدفع)</div>
+            <div class="stat-val val-red"><span class="num" id="statDebt">0</span> ليرة</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">المتبقي من باقتك الأم (800 GB)</div>
+            <div class="stat-val"><span class="num" id="statMasterRem">819200</span> MB</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="newCustName" placeholder="اسم العميل (مثلاً: أختي)...">
+        <button onclick="addCustomer()">+ إضافة عميل جديد</button>
+    </div>
+
+    <div class="customers-grid" id="customersList"></div>
+
+    <div class="log-section">
+        <h3 style="margin-top:0; color:var(--purple-light);">📜 سجل العمليات والمتبقي المرحّل</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ والوقت</th>
+                        <th>العميل</th>
+                        <th>نوع العملية</th>
+                        <th>التفاصيل</th>
+                    </tr>
+                </thead>
+                <tbody id="txTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toEnNum(val) {
+        return Number(val).toLocaleString('en-US', { maximumFractionDigits: 2, useGrouping: false });
+    }
+
+    async function loadData() {
+        const res = await fetch('/api/data');
+        const data = await res.json();
+
+        document.getElementById('masterMb').value = toEnNum(data.settings.total_master_mb);
+        document.getElementById('masterCost').value = toEnNum(data.settings.master_cost);
+
+        let totalBilled = 0, totalPaid = 0;
+        const list = document.getElementById('customersList');
+        list.innerHTML = '';
+
+        data.customers.forEach(c => {
+            totalBilled += c.total_billed;
+            totalPaid += c.total_paid;
+            const debt = Math.max(0, c.total_billed - c.total_paid);
+            const gbApprox = (c.remaining_mb / 1024).toFixed(2);
+
+            list.innerHTML += `
+                <div class="cust-card">
+                    <div class="cust-header">
+                        <span class="cust-name">${c.name}</span>
+                        <button class="btn-red" onclick="deleteCust(${c.id})">حذف</button>
+                    </div>
+                    <div class="cust-metrics">
+                        <div class="metric-box">
+                            <span>المتبقي المرحّل للغد</span>
+                            <strong style="color:var(--purple-light);">
+                                <span class="num">${toEnNum(c.remaining_mb)}</span> MB
+                                <div style="color:var(--text-muted); font-size:0.75rem; font-weight:normal;">(<span class="num">${gbApprox}</span> GB)</div>
+                            </strong>
+                        </div>
+                        <div class="metric-box">
+                            <span>الدين المتبقي عليه</span>
+                            <strong style="color:${debt > 0 ? 'var(--red)' : 'var(--green)'};"><span class="num">${toEnNum(debt)}</span> ليرة</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span>إجمالي المطلوب</span>
+                            <strong><span class="num">${toEnNum(c.total_billed)}</span> ليرة</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span>المدفوع (المقبوض)</span>
+                            <strong style="color:var(--green);"><span class="num">${toEnNum(c.total_paid)}</span> ليرة</strong>
+                        </div>
+                    </div>
+
+                    <div class="cust-actions">
+                        <div class="action-row" title="شراء باقة جديدة (تضاف فوق رصيدهم المتبقي تلقائياً)">
+                            <input type="number" id="mb_${c.id}" value="3072" step="100" title="الميجابايت (افتراضي 3GB)">
+                            <input type="number" id="pr_${c.id}" value="60" title="السعر بالليرة">
+                            <button class="btn-green" onclick="addPkg(${c.id}, 'PREPAID')">+ مسبق</button>
+                            <button class="btn-amber" onclick="addPkg(${c.id}, 'POSTPAID')">+ لاحق</button>
+                        </div>
+                        <div class="action-row" title="خصم الاستهلاك اليومي (مثلاً استهلكوا 2 جيجا = 2048 MB)">
+                            <input type="number" id="use_${c.id}" value="1024" step="100" placeholder="مستهلك MB">
+                            <button onclick="consumeMb(${c.id})">خصم استهلاك اليوم (MB)</button>
+                        </div>
+                        <div class="action-row" title="قبض الدين أو جزء منه">
+                            <input type="number" id="pay_${c.id}" value="${debt > 0 ? toEnNum(debt) : 60}" placeholder="المبلغ">
+                            <button class="btn-green" onclick="payDebt(${c.id})">قبض دفعة (ليرة)</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('statBilled').innerText = toEnNum(totalBilled);
+        document.getElementById('statPaid').innerText = toEnNum(totalPaid);
+        document.getElementById('statDebt').innerText = toEnNum(Math.max(0, totalBilled - totalPaid));
+        const remMaster = Math.max(0, data.settings.total_master_mb - data.total_sold_mb);
+        document.getElementById('statMasterRem').innerText = toEnNum(remMaster);
+
+        const txBody = document.getElementById('txTable');
+        txBody.innerHTML = '';
+        data.transactions.forEach(t => {
+            let badge = '<span class="badge badge-use">استهلاك</span>';
+            if (t.payment_mode === 'PREPAID') badge = '<span class="badge badge-pre">شراء (مقبوض)</span>';
+            if (t.payment_mode === 'POSTPAID') badge = '<span class="badge badge-post">شراء (دين)</span>';
+
+            txBody.innerHTML += `
+                <tr>
+                    <td class="num" style="color:var(--text-muted); text-align:right;">${t.created_at}</td>
+                    <td><strong>${t.customer_name}</strong></td>
+                    <td>${badge}</td>
+                    <td class="num" style="text-align:right;">${t.note}</td>
+                </tr>
+            `;
+        });
+    }
+
+    async function addCustomer() {
+        const name = document.getElementById('newCustName').value;
+        if (!name.trim()) return;
+        await fetch('/api/customers', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({name})
+        });
+        document.getElementById('newCustName').value = '';
+        loadData();
+    }
+
+    async function deleteCust(id) {
+        if (!confirm('هل أنت متأكد من حذف العميل؟')) return;
+        await fetch('/api/customers/' + id, { method: 'DELETE' });
+        loadData();
+    }
+
+    async function addPkg(cid, mode) {
+        const mb = document.getElementById('mb_' + cid).value;
+        const price = document.getElementById('pr_' + cid).value;
+        await fetch('/api/package', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({customer_id: cid, mb, price, mode})
+        });
+        loadData();
+    }
+
+    async function consumeMb(cid) {
+        const used_mb = document.getElementById('use_${cid}' || 'use_' + cid).value;
+        await fetch('/api/consume', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({customer_id: cid, used_mb})
+        });
+        loadData();
+    }
+
+    async function payDebt(cid) {
+        const amount = document.getElementById('pay_' + cid).value;
+        await fetch('/api/pay', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({customer_id: cid, amount})
+        });
+        loadData();
+    }
+
+    async function saveSettings() {
+        const total_master_mb = document.getElementById('masterMb').value;
+        const master_cost = document.getElementById('masterCost').value;
+        await fetch('/api/settings', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({total_master_mb, master_cost})
+        });
+        loadData();
+    }
+
+    loadData();
+</script>
+</body>
+</html>
